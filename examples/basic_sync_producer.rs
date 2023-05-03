@@ -12,8 +12,15 @@ fn main() {
     // and message timeout set to 10ms.
     let producer_config = prod_utils::get_default_producer_config("localhost:9092", "10");
 
-    // Dumy args vector
-    let args = Vec::new();
+    let mut args = Vec::new();
+    // Due to the way that the type erasure works, we need to pass the arguments
+    // as Arc<dyn Any + Sync + Send> objects.
+    // This allows us to pass any type of arguments to the worker function.
+    // However, the worker function needs to know what type of arguments it expects.
+    // Furthermore, if we want to send an argument, the type of the argument needs to
+    // implement the ToBytes trait.
+    args.push(Arc::new(String::from("message")) as Arc<dyn Any + Sync + Send>); 
+    args.push(Arc::new(String::from("key")) as Arc<dyn Any + Sync + Send>);
 
     match produce_in_parallel(
         num_threads,
@@ -32,10 +39,11 @@ fn basic_sync_worker_function(
     topic: &'static str,
     args: Vec<Arc<dyn Any + Sync + Send>>,
 ) -> i32 {
-    let message = args[0].clone();
-    let key = args[1].clone();
 
+    let message = args[0].clone();
     let message = message.downcast_ref::<String>().unwrap();
+
+    let key = args[1].clone();
     let key = key.downcast_ref::<String>().unwrap();
 
     let send_res = producer.send(BaseRecord::to(topic).payload(message).key(key));
