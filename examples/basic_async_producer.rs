@@ -1,9 +1,9 @@
 use std::time::Duration;
 use std::{any::Any, sync::Arc};
 
-use kafkaesque::async_prod;
-use kafkaesque::async_prod::AsyncFunctionWrapper;
-use kafkaesque::prod_utils;
+use brod::async_prod;
+use brod::async_prod::AsyncFunctionWrapper;
+use brod::prod_utils;
 use rdkafka::producer::FutureProducer;
 
 #[tokio::main]
