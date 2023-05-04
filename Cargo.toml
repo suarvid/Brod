@@ -2,6 +2,12 @@
 name = "kafkaesque"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "A wrapper library providing an API for executing Kafka producers in parallel."
+homepage = "https://github.com/suarvid/kafkaesque"
+repository = "https://github.com/suarvid/kafkaesque"
+readme = "README.md"
+keywords = ["kafka", "producer", "parallel", "tokio"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
