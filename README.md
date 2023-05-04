@@ -1,5 +1,8 @@
 # Brod
 
+[![crates.io](https://img.shields.io/crates/v/brod.svg)](https://crates.io/crates/brod)
+[![docs.rs](https://docs.rs/brod/badge.svg)](https://docs.rs/brod/)
+
 A small wrapper library which provides functionality for executing multiple
 Kafka producers in parallel. The underlying Kafka functionality is provided
 by the [rust-rdkafka](https://github.com/fede1024/rust-rdkafka) library.
