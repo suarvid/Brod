@@ -1,5 +1,5 @@
 # Brod
-
+[<img alt="github" src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" height="20">](https://github.com/suarvid/brod)
 [![crates.io](https://img.shields.io/crates/v/brod.svg)](https://crates.io/crates/brod)
 [![docs.rs](https://docs.rs/brod/badge.svg)](https://docs.rs/brod/)
 

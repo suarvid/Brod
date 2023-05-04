@@ -1,6 +1,6 @@
 [package]
 name = "brod"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "A wrapper library providing an API for executing Kafka producers in parallel."
