@@ -23,7 +23,7 @@ pub fn get_default_producer_config(
     producer_config
 }
 
-/// Casts a vector of type T to a vector of type Arc<dyn Any + Send + Sync>,
+/// Casts a vector of type T to a vector of type Vec<Arc<dyn Any + Send + Sync>>,
 /// erasing the type information in the process.
 /// Makes it easier to pass arguments to the worker function, as the conversions
 /// need not be done manually.
@@ -35,7 +35,7 @@ pub fn get_default_producer_config(
 /// # Returns
 ///
 /// * `return_vec` - A vector of type Arc<dyn Any + Send + Sync>
-pub fn type_erase_args<T>(to_add: Vec<T>) -> Vec<Arc<dyn Any + Send + Sync>>
+pub fn type_erase_args_vec_async<T>(to_add: Vec<T>) -> Vec<Arc<dyn Any + Send + Sync>>
 where
     T: Sync + Send + Clone + 'static,
 {
@@ -46,6 +46,69 @@ where
     }
 
     return_vec
+}
+
+/// Casts a vector of type T to a vector of type Vec<Arc<dyn Any + Send + Sync>>,
+/// erasing the type information in the process.
+/// Makes it easier to pass arguments to the worker function, as the conversions
+/// need not be done manually.
+///
+/// # Arguments
+///
+/// * `to_add` - A vector of type T, where T implements Sync + Send + Clone + 'static
+///
+/// # Returns
+///
+/// * `return_vec` - A vector of type Arc<dyn Any + Send + Sync>
+pub fn type_erase_args_vec_sync<T>(to_add: Vec<T>) -> Vec<Box<dyn Any + Send + Sync>>
+where
+    T: Sync + Send + Clone + 'static,
+{
+    let mut return_vec = vec![];
+    for val in to_add {
+        let val = Box::new(val.clone());
+        return_vec.push(val as Box<dyn Any + Sync + Send>)
+    }
+
+    return_vec
+}
+
+/// Casts a single argument of type T to a single argument of type Arc<dyn Any + Send + Sync>,
+/// erasing the type information in the process.
+/// Makes it easier to pass arguments to the worker function, as the conversions
+/// need not be done manually.
+///
+/// # Arguments
+///
+/// * `to_add` - A single argument of type T, where T implements Sync + Send + Clone + 'static
+///
+/// # Returns
+///
+/// * A single argument of type Arc<dyn Any + Send + Sync>
+pub fn type_erase_single_arg_async<T>(to_add: T) -> Arc<dyn Any + Send + Sync>
+where
+    T: Sync + Send + Clone + 'static,
+{
+    Arc::new(to_add.clone()) as Arc<dyn Any + Sync + Send>
+}
+
+/// Casts a single argument of type T to a single argument of type Arc<dyn Any + Send + Sync>,
+/// erasing the type information in the process.
+/// Makes it easier to pass arguments to the worker function, as the conversions
+/// need not be done manually.
+///
+/// # Arguments
+///
+/// * `to_add` - A single argument of type T, where T implements Sync + Send + Clone + 'static
+///
+/// # Returns
+///
+/// * A single argument of type Arc<dyn Any + Send + Sync>
+pub fn type_erase_single_arg_sync<T>(to_add: T) -> Box<dyn Any + Send + Sync>
+where
+    T: Sync + Send + Clone + 'static,
+{
+    Box::new(to_add.clone()) as Box<dyn Any + Sync + Send>
 }
 
 /// Validates the given input parameters, to ensure that they are valid.
@@ -144,11 +207,18 @@ mod tests {
     #[test]
     fn test_type_erase_args_valid() {
         let to_add = vec![1, 2, 3, 4, 5];
-        let return_vec = type_erase_args(to_add);
+        let return_vec = type_erase_args_vec_async(to_add);
         assert_eq!(return_vec.len(), 5);
 
         for i in 0..5 {
-            assert_eq!(*return_vec[i].clone().downcast::<i32>().unwrap(), i as i32 + 1);
+            assert_eq!(
+                *return_vec[i].clone().downcast::<i32>().unwrap(),
+                i as i32 + 1
+            );
         }
+
+        let to_add = vec![1, 2, 3, 4, 5];
+        let return_vec = type_erase_args_vec_sync(to_add);
+        assert_eq!(return_vec.len(), 5);
     }
 }

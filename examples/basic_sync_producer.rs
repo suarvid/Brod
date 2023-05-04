@@ -1,10 +1,13 @@
 use std::{any::Any, sync::Arc, time::Duration};
 
-use parallel_kafka_producer::prod_utils;
+use parallel_kafka_producer::prod_utils::{self, type_erase_single_arg_async};
 use parallel_kafka_producer::sync_prod::produce_in_parallel;
 use rdkafka::producer::{BaseProducer, BaseRecord, Producer};
 
 fn main() {
+
+    // This is a basic example showing how to use the generic sync producer.
+
     let num_threads = 4;
     let topic = "test-topic";
 
@@ -20,7 +23,11 @@ fn main() {
     // Furthermore, if we want to send an argument, the type of the argument needs to
     // implement the ToBytes trait.
     args.push(Arc::new(String::from("message")) as Arc<dyn Any + Sync + Send>); 
-    args.push(Arc::new(String::from("key")) as Arc<dyn Any + Sync + Send>);
+
+    // Can also use the type_erase_single_arg_async function to create the arguments.
+    // needs to be async when passing arguments to worker functions, but the sync
+    // variants may be used when returning values from sync worker functions.
+    args.push(type_erase_single_arg_async(String::from("key")));
 
     match produce_in_parallel(
         num_threads,
