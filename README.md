@@ -1,10 +1,13 @@
-# Kafkaesque
+# Brod
 
 A small wrapper library which provides functionality for executing multiple
 Kafka producers in parallel. The underlying Kafka functionality is provided
 by the [rust-rdkafka](https://github.com/fede1024/rust-rdkafka) library.
 Furthermore, in order to support the use of asynchronous *FutureProducer*s,
 the [tokio](https://tokio.rs/) runtime is used.
+
+(Named after [Max Brod](https://en.wikipedia.org/wiki/Max_Brod), a close friend 
+of Franz Kafka, who saved Kafka's literary work.)
 
 ## Documentation
 If Cargo, the Rust package manager, is installed, local documentation can be generated 
