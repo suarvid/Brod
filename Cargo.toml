@@ -1,5 +1,5 @@
 [package]
-name = "parallel-kafka-producer"
+name = "kafkaesque"
 version = "0.1.0"
 edition = "2021"
 

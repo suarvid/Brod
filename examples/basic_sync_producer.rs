@@ -1,7 +1,7 @@
 use std::{any::Any, sync::Arc, time::Duration};
 
-use parallel_kafka_producer::prod_utils::{self, type_erase_single_arg_async};
-use parallel_kafka_producer::sync_prod::produce_in_parallel;
+use kafkaesque::prod_utils::{self, type_erase_single_arg_async};
+use kafkaesque::sync_prod::produce_in_parallel;
 use rdkafka::producer::{BaseProducer, BaseRecord, Producer};
 
 fn main() {
