@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "A wrapper library providing an API for executing Kafka producers in parallel."
-homepage = "https://github.com/suarvid/kafkaesque"
-repository = "https://github.com/suarvid/kafkaesque"
+homepage = "https://github.com/suarvid/Brod"
+repository = "https://github.com/suarvid/Brod"
 readme = "README.md"
 keywords = ["kafka", "producer", "parallel", "tokio"]
 
