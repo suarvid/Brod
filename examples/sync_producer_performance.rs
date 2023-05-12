@@ -1,7 +1,7 @@
 use rdkafka::producer::{BaseProducer, BaseRecord};
-use std::any::Any;
 use std::sync::Arc;
 use std::time::Instant;
+use std::{any::Any, thread};
 
 use brod::{
     prod_utils::{self, type_erase_single_arg_async},
@@ -10,17 +10,19 @@ use brod::{
 
 use pretty_env_logger;
 
-const N_MESSAGES: usize = 1_000_000;
+const N_MESSAGES: usize = 100_000;
 
 fn main() {
     pretty_env_logger::init();
+
+    let args: Vec<String> = std::env::args().collect();
+    let n_threads: usize = args[1].parse().unwrap();
     let topic = "test-topic";
 
     let producer_config = prod_utils::get_throughput_producer("localhost:9092", "100");
 
     let mut args = Vec::new();
 
-    let n_threads = 32;
     let n_messages_per_thread = N_MESSAGES / n_threads;
 
     // Should be n, key, payload
@@ -28,16 +30,12 @@ fn main() {
     args.push(type_erase_single_arg_async(String::from("worker")));
     args.push(type_erase_single_arg_async(String::from("PAYLOAD")));
 
-    let parallel_start = Instant::now();
+    let wrapper_start = Instant::now();
     match produce_in_parallel(6, topic, &producer_config, send_n_messages_worker, args) {
         Ok(_) => println!("Successfully produced messages!"),
         Err(e) => println!("Failed to produce messages: {:?}", e),
     }
-    let parallel_elapsed = parallel_start.elapsed();
-    println!(
-        "Time elapsed for parallel execution: {} ms",
-        parallel_elapsed.as_millis()
-    );
+    let wrapper_elapsed = wrapper_start.elapsed();
 
     let seq_prod: &BaseProducer = &producer_config.create().unwrap();
 
@@ -47,9 +45,27 @@ fn main() {
     send_n_messages_sequential(seq_prod, topic, N_MESSAGES, key, payload);
     let sequential_elapsed = sequential_start.elapsed();
 
+    let shared_prod = producer_config.create().unwrap();
+    let key = String::from("parallel");
+    let payload = String::from("PAYLOAD");
+
+    let parallel_start = Instant::now();
+    send_n_messages_shared_producer(n_threads, shared_prod, topic, N_MESSAGES, key, payload);
+    let parallel_elapsed = parallel_start.elapsed();
+
     println!(
         "Time elapsed for sequential execution: {} ms",
         sequential_elapsed.as_millis()
+    );
+
+    println!(
+        "Time elapsed for parallel execution with a shared instance: {} ms",
+        parallel_elapsed.as_millis()
+    );
+
+    println!(
+        "Time elapsed for parallel execution with wrapper function: {} ms",
+        wrapper_elapsed.as_millis()
     );
 }
 
@@ -66,6 +82,38 @@ fn send_n_messages_sequential(
             Ok(_) => {}
             Err(e) => println!("Failed to produce message: {:?}", e),
         }
+    }
+}
+
+fn send_n_messages_shared_producer(
+    n_threads: usize,
+    producer: BaseProducer,
+    topic: &'static str,
+    n: usize,
+    key: String,
+    payload: String,
+) {
+    let mut handles = Vec::new();
+    let shared_prod = Arc::new(producer);
+
+    for _ in 0..n_threads {
+        let prod = Arc::clone(&shared_prod);
+        let payload = payload.clone();
+        let key = key.clone();
+        let handle = thread::spawn(move || {
+            for _ in 0..n {
+                let send_res = prod.send(BaseRecord::to(topic).key(&key).payload(&payload));
+                match send_res {
+                    Ok(_) => {}
+                    Err(e) => {} //println!("Failed to produce message: {:#?}", e),
+                }
+            }
+        });
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
     }
 }
 

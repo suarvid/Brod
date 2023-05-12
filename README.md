@@ -43,6 +43,13 @@ this should be fairly simple to ensure.
 
 For detailed information, see the [examples](https://github.com/suarvid/kafkaesque/tree/master/examples).
 
+In order to run the examples, the command `cargo run --package brod --example <file name> <example args>`
+can be used. For example, in order to run the `sync_producer_performance.rs` example, using 6 threads,
+and compiling with optimizations, the command is `cargo run --release --package brod --example sync_producer_performance 6`.
+
+Most examples, as well as most integration tests, expect a broker to be running on localhost:9092, with a topic
+named **test-topic**.
+
 ### Future Work
 Currently, the library only provides the core functionality required to enable parallel execution
 of worker functions in a flexible manner, along with a limited amount of utility functions.
