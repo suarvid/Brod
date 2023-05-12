@@ -6,7 +6,6 @@ use std::thread;
 use std::{any::Any, boxed::Box, sync::Arc};
 
 use crate::prod_utils::validate_produce_input;
-//use prod_utils::validate_produce_input;
 
 /// Type alias for a synchronous worker function.
 /// The worker function is assumed to expect a BaseProducer, a topic name, and a vector of arguments as its parameter.
@@ -119,7 +118,6 @@ pub fn produce_in_parallel_type_erased(
         let tx = tx.clone();
         match producer_config.create::<BaseProducer>() {
             Ok(producer) => {
-
                 let worker_function = Arc::new(worker_function);
 
                 let function_args = worker_function_args.clone();

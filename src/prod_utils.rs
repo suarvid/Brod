@@ -23,6 +23,19 @@ pub fn get_default_producer_config(
     producer_config
 }
 
+pub fn get_throughput_producer(
+    bootstrap_servers: &str,
+    message_timeout_ms: &str,
+) -> ClientConfig {
+    let mut producer_config = ClientConfig::new();
+    producer_config.set("message.timeout.ms", message_timeout_ms);
+    producer_config.set("bootstrap.servers", bootstrap_servers);
+    producer_config.set("linger.ms", "20");
+    producer_config.set("queue.buffering.max.messages", "1000000");
+    producer_config.set("queue.buffering.max.ms", "1000");
+    producer_config
+}
+
 /// Casts a vector of type T to a vector of type Vec<Arc<dyn Any + Send + Sync>>,
 /// erasing the type information in the process.
 /// Makes it easier to pass arguments to the worker function, as the conversions

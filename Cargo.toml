@@ -17,3 +17,4 @@ rdkafka = { version = "0.25", features = ["cmake-build"] }
 tokio = {version = "1.28.0", features = ["full"]}
 pretty_env_logger = "0.4.0"
 tokio-test = "0.4.2" 
+num_cpus = "1.15.0"

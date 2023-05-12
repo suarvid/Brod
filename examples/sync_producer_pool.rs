@@ -45,6 +45,8 @@ fn produce_with_pool(pool: SyncProducerPool, topic: &'static str) {
                 if let Err(e) = res {
                     let err_msg = format!("{}", e);
                     panic!("Failed to produce with producer pool: {}", err_msg);
+                } else {
+                    println!("Successfully produced message!");
                 }
             }
         });
