@@ -7,26 +7,26 @@ use brod::producerpool::SyncProducerPool;
 use rdkafka::producer::{BaseProducer, BaseRecord, Producer};
 use rdkafka::ClientConfig;
 
+use std::env::args;
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
 
 const NUM_MESSAGES: usize = 1_000_000;
 
-fn send_messages_prod_pool(pool: SyncProducerPool, topic: &'static str) {
-    let n_cores = num_cpus::get();
-    let messages_per_core = NUM_MESSAGES / n_cores;
+fn send_messages_prod_pool(pool: SyncProducerPool, topic: &'static str, num_threads: usize) {
+    let messages_per_thread = NUM_MESSAGES / num_threads;
 
     let pool = Arc::new(pool);
 
     let mut handles = Vec::new();
 
-    for _ in 0..n_cores {
+    for _ in 0..num_threads {
         let pool = Arc::clone(&pool);
         let topic = topic.clone();
 
         let handle = thread::spawn(move || {
-            for _ in 0..messages_per_core {
+            for _ in 0..messages_per_thread {
                 let key = String::from("pool");
                 let payload = String::from("PAYLOAD");
 
@@ -46,21 +46,19 @@ fn send_messages_prod_pool(pool: SyncProducerPool, topic: &'static str) {
     }
 }
 
-fn send_messages_parallel(prod_config: &ClientConfig, topic: &'static str) {
+fn send_messages_parallel(prod_config: &ClientConfig, topic: &'static str, num_threads: usize) {
     let producer: BaseProducer = prod_config.create().unwrap();
     //let safe_producer = Mutex::new(producer);
     let shared_producer = Arc::new(producer);
-    let num_threads = num_cpus::get();
 
-    let messages_per_core = NUM_MESSAGES / num_threads;
+    let messages_per_thread = NUM_MESSAGES / num_threads;
 
     let mut handles = Vec::new();
 
     for _ in 0..num_threads {
         let shared_producer = Arc::clone(&shared_producer);
-        let topic = topic.clone();
         let handle = thread::spawn(move || {
-            for _ in 0..messages_per_core {
+            for _ in 0..messages_per_thread {
                 let key = String::from("parallel");
                 let payload = String::from("PAYLOAD");
                 match shared_producer.send(BaseRecord::to(topic).key(&key).payload(&payload)) {
@@ -73,7 +71,7 @@ fn send_messages_parallel(prod_config: &ClientConfig, topic: &'static str) {
         handles.push(handle);
     }
 
-    shared_producer.flush(Duration::from_secs(5));
+    //shared_producer.flush(Duration::from_secs(5));
 
     for handle in handles {
         handle.join().unwrap();
@@ -95,15 +93,17 @@ fn send_messages_synchronous(producer: &BaseProducer, topic: &str) {
 }
 
 fn main() {
+    let args: Vec<String> = args().collect();
+    let num_threads: usize = args[1].parse().unwrap();
     let topic = "test-topic";
 
     //let prod_config = &prod_utils::get_default_producer_config("localhost:9092", "100");
     let prod_config = &prod_utils::get_throughput_producer("localhost:9092", "10");
 
-    match SyncProducerPool::new_with_n_producers(2, prod_config) {
+    match SyncProducerPool::new(num_threads, prod_config) {
         Ok(pool) => {
             let start_pool = Instant::now();
-            send_messages_prod_pool(pool, topic);
+            send_messages_prod_pool(pool, topic, num_threads);
             let elapsed_pool = start_pool.elapsed();
             println!(
                 "Time elapsed with producer pool: {} ms",
@@ -114,8 +114,9 @@ fn main() {
     }
 
     let start_parallel = Instant::now();
-    send_messages_parallel(prod_config, topic);
+    send_messages_parallel(prod_config, topic, num_threads);
     let elapsed_parallel = start_parallel.elapsed();
+
     println!(
         "Time elapsed with multiple threads, one producer: {} ms",
         elapsed_parallel.as_millis()
