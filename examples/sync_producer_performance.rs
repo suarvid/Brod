@@ -12,6 +12,11 @@ use pretty_env_logger;
 
 const N_MESSAGES: usize = 100_000;
 
+/// A basic performance comparison between a using a single producer with one thread,
+/// a single producer shared between multiple threads, and multiple threads each alloted
+/// its own producer instance, using the synchronous wrapper function.
+/// In each case, a total of 100 000 messages are sent, each containing a short string
+/// as both the key and the payload.
 fn main() {
     pretty_env_logger::init();
 
@@ -49,9 +54,9 @@ fn main() {
     let key = String::from("parallel");
     let payload = String::from("PAYLOAD");
 
-    let parallel_start = Instant::now();
+    let shared_start = Instant::now();
     send_n_messages_shared_producer(n_threads, shared_prod, topic, N_MESSAGES, key, payload);
-    let parallel_elapsed = parallel_start.elapsed();
+    let shared_elapsed = shared_start.elapsed();
 
     println!(
         "Time elapsed for sequential execution: {} ms",
@@ -60,7 +65,7 @@ fn main() {
 
     println!(
         "Time elapsed for parallel execution with a shared instance: {} ms",
-        parallel_elapsed.as_millis()
+        shared_elapsed.as_millis()
     );
 
     println!(
@@ -69,6 +74,7 @@ fn main() {
     );
 }
 
+/// Sends messages using a single thread and single producer instance
 fn send_n_messages_sequential(
     producer: &BaseProducer,
     topic: &'static str,
@@ -85,6 +91,7 @@ fn send_n_messages_sequential(
     }
 }
 
+/// Sends messages using a single producer instance, shared among multiple threads
 fn send_n_messages_shared_producer(
     n_threads: usize,
     producer: BaseProducer,
@@ -117,6 +124,8 @@ fn send_n_messages_shared_producer(
     }
 }
 
+/// Worker function which is passed to the wrapper function provided by the library,
+/// in order to execute the function in parallel.
 fn send_n_messages_worker(
     producer: &BaseProducer,
     topic: &'static str,
