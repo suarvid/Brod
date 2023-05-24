@@ -3,6 +3,7 @@ macro_rules! spawn_threads_with_args {
     ($num_threads:expr; $prod_config:expr; $func:expr, $($($args:expr),*);*) => {
         {
             use rdkafka::ClientConfig;
+            use rdkafka::producer::BaseProducer;
             use std::sync::mpsc::channel;
             use std::sync::Arc;
             $(
@@ -18,7 +19,8 @@ macro_rules! spawn_threads_with_args {
                     let tx = tx.clone();
                     let prod_config = prod_config.clone();
                     handles.push(std::thread::spawn(move || {
-                        let result = $func($($args),*);
+                        let producer: BaseProducer = prod_config.create().expect("Producer creation error");
+                        let result = $func(producer, $($args),*);
                         println!("Thread {:?} result {:?}", std::thread::current().id(), result);
                         tx.send(result).expect("Failed to send result!");
                     }));
