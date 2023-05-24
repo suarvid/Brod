@@ -23,10 +23,7 @@ pub fn get_default_producer_config(
     producer_config
 }
 
-pub fn get_throughput_producer(
-    bootstrap_servers: &str,
-    message_timeout_ms: &str,
-) -> ClientConfig {
+pub fn get_throughput_producer(bootstrap_servers: &str, message_timeout_ms: &str) -> ClientConfig {
     let mut producer_config = ClientConfig::new();
     producer_config.set("message.timeout.ms", message_timeout_ms);
     producer_config.set("bootstrap.servers", bootstrap_servers);

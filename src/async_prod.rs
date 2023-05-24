@@ -12,7 +12,8 @@ use rdkafka::{producer::FutureProducer, ClientConfig};
 pub type DynFut<'lt, T> = Pin<Box<dyn 'lt + Send + Future<Output = T>>>;
 
 /// Type alias for a boxed async function that returns a future of type T.
-pub type AsyncWorkerFunction<T> = fn(FutureProducer, &'static str, Vec<Arc<dyn Any + Send + Sync>>) -> DynFut<'static, T>;
+pub type AsyncWorkerFunction<T> =
+    fn(FutureProducer, &'static str, Vec<Arc<dyn Any + Send + Sync>>) -> DynFut<'static, T>;
 
 /// Type alias for a boxed async function that returns a future of type T.
 /// The inner function takes a FutureProducer, a topic name, and a vector of arguments.
@@ -33,9 +34,7 @@ impl<T> AsyncFunctionWrapper<T> {
     /// # Returns
     ///
     /// * `AsyncFunctionWrapper<T>` - The wrapped function
-    pub fn new(
-        inner: AsyncWorkerFunction<T>,
-    ) -> Self {
+    pub fn new(inner: AsyncWorkerFunction<T>) -> Self {
         Self { inner }
     }
 
@@ -59,8 +58,6 @@ impl<T> AsyncFunctionWrapper<T> {
         (self.inner)(producer, topic, args)
     }
 }
-
-
 
 /// Executes the given worker function in parallel, using the given number of threads.
 /// Sends the given arguments to the worker function, which is assumed to expect a
@@ -264,7 +261,6 @@ mod tests {
         topic: &'static str,
         _: Vec<Arc<dyn Any + Sync + Send>>,
     ) -> Result<(i32, i64), (rdkafka::error::KafkaError, rdkafka::message::OwnedMessage)> {
-
         let i = 0;
         let delivery_status = producer
             .send(
@@ -282,15 +278,14 @@ mod tests {
         delivery_status
     }
 
-
     /// This test is a bit more involved than the others, as it actually sends messages to Kafka
     /// and checks that they are received correctly.
     /// It also checks that the number of messages sent is correct.
     /// This test is a bit flaky, as it relies on the Kafka broker being up and running.
     /// It also relies on the topic being created beforehand.
-    /// 
+    ///
     /// # Required setup
-    /// 
+    ///
     /// * Kafka broker running on localhost:9092
     /// * Topic "test-topic" created on the broker
     #[test]

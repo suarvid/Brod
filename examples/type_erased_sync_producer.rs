@@ -1,6 +1,9 @@
 use std::{any::Any, sync::Arc, time::Duration};
 
-use brod::{prod_utils::{self, type_erase_single_arg_sync}, sync_prod::produce_in_parallel_type_erased};
+use brod::{
+    prod_utils::{self, type_erase_single_arg_sync},
+    sync_prod::produce_in_parallel_type_erased,
+};
 use rdkafka::producer::{BaseProducer, BaseRecord, Producer};
 
 fn main() {
@@ -45,8 +48,6 @@ fn sync_worker_function_returns_type_erased_vec(
     topic: &'static str,
     args: Vec<Arc<dyn Any + Sync + Send>>,
 ) -> Box<dyn Any + Sync + Send> {
-
-
     let message = args[0].clone();
     let message = message.downcast_ref::<String>().unwrap();
 
@@ -66,20 +67,21 @@ fn sync_worker_function_returns_type_erased_vec(
     drop(producer);
 
     // The function used with the type-erased produce in parallel function
-    // needs to return a Box<dyn Any + Sync + Send> object, i.e. a 
+    // needs to return a Box<dyn Any + Sync + Send> object, i.e. a
     // type-erased object that implements the Any, Sync and Send traits.
 
     // As such, it may return a vector. In this case, it is a vector of
     // type-erased objects, i.e. a vector of Box<dyn Any + Sync + Send> objects.
     let mut ret_vec: Vec<Box<dyn Any + Sync + Send>> = Vec::new();
 
-    ret_vec.push(Box::new(String::from("Hello from the worker function!")) as Box<dyn Any + Sync + Send>);
+    ret_vec.push(
+        Box::new(String::from("Hello from the worker function!")) as Box<dyn Any + Sync + Send>
+    );
     ret_vec.push(Box::new(1) as Box<dyn Any + Sync + Send>);
 
     // We can also use the type_erase_single_arg_sync function to type-erase
     // a single argument before adding it to the vector.
     ret_vec.push(type_erase_single_arg_sync(1.0));
-
 
     Box::new(ret_vec) as Box<dyn Any + Sync + Send>
 }

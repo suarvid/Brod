@@ -5,7 +5,6 @@ use brod::sync_prod::produce_in_parallel;
 use rdkafka::producer::{BaseProducer, BaseRecord, Producer};
 
 fn main() {
-
     // This is a basic example showing how to use the generic sync producer.
 
     let num_threads = 4;
@@ -22,7 +21,7 @@ fn main() {
     // However, the worker function needs to know what type of arguments it expects.
     // Furthermore, if we want to send an argument, the type of the argument needs to
     // implement the ToBytes trait.
-    args.push(Arc::new(String::from("message")) as Arc<dyn Any + Sync + Send>); 
+    args.push(Arc::new(String::from("message")) as Arc<dyn Any + Sync + Send>);
 
     // Can also use the type_erase_single_arg_async function to create the arguments.
     // needs to be async when passing arguments to worker functions, but the sync
@@ -36,7 +35,10 @@ fn main() {
         basic_sync_worker_function,
         args,
     ) {
-        Ok(v) => println!("Successfully produced messages, returned value is {:#?}!", v),
+        Ok(v) => println!(
+            "Successfully produced messages, returned value is {:#?}!",
+            v
+        ),
         Err(e) => println!("Error producing messages: {:?}", e),
     }
 }
@@ -46,7 +48,6 @@ fn basic_sync_worker_function(
     topic: &'static str,
     args: Vec<Arc<dyn Any + Sync + Send>>,
 ) -> i32 {
-
     let message = args[0].clone();
     let message = message.downcast_ref::<String>().unwrap();
 

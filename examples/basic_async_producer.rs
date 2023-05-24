@@ -8,7 +8,6 @@ use rdkafka::producer::FutureProducer;
 
 #[tokio::main]
 async fn main() {
-
     // This is a basic example showing how to use the async producer.
 
     let topic = "test-topic";
