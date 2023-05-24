@@ -11,10 +11,5 @@ fn main() {
 
     let producer_config = &prod_utils::get_default_producer_config("localhost:9092", "100");
 
-    let res: Result<Vec<i32>, String> =
-        spawn_threads_with_args!(num_threads; producer_config; add, 1, 2);
-
-    for r in res.unwrap() {
-        println!("r: {}", r);
-    }
+    spawn_threads_with_args!(num_threads; producer_config; add, 1, 2; 3, 4);
 }
