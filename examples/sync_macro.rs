@@ -2,6 +2,7 @@ use brod::prod_utils;
 use brod::produce_parallel;
 use rdkafka::producer::BaseProducer;
 use rdkafka::producer::BaseRecord;
+use rdkafka::producer::FutureProducer;
 
 fn add(p: BaseProducer, a: i32, b: i32) -> i32 {
     a + b
@@ -48,7 +49,7 @@ fn main() {
     let producer_config = &prod_utils::get_default_producer_config("localhost:9092", "100");
 
     //spawn_threads_with_args!(num_threads; producer_config; add, 1, 2; 3, 4);
-    let results = produce_parallel!(num_threads; producer_config; publish_some_stuff,
+    let results = produce_parallel!(num_threads; producer_config; BaseProducer; publish_some_stuff,
         topic, 5, String::from("Henlo"), String::from("Henlo");
         topic, 100, String::from("Baja"), String::from("Maja"));
 
@@ -56,7 +57,7 @@ fn main() {
         println!("r: {:#?}", r);
     }
 
-    let results = produce_parallel!(num_threads; producer_config; publish_some_other_stuff,
+    let results = produce_parallel!(num_threads; producer_config; BaseProducer; publish_some_other_stuff,
         topic, 5, String::from("A"), String::from("B"));
 
     for r in results {

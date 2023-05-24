@@ -6,13 +6,15 @@
 ///
 /// * `num_threads` - the number of threads to use for execution; an expression
 /// * `prod_config` - the config object used to create producers; an expression
+/// * `prod_type` - The type of producer expected by the worker function (i.e. BaseProducer or
+/// FutureProducer)
 /// * `func` - a function pointer to the worker function; an expression
 /// * `args` - zero or more repeated expressions, internally separated by a comma, representing the
 /// arguments to be passed to the worker function. Separate calls to the worker function can be
 /// designated by using a semicolon (;) to (externally) separate the arguments used in the
 /// respective calls.
 macro_rules! produce_parallel {
-    ($num_threads:expr; $prod_config:expr; $func:expr, $($($args:expr),*);*) => {
+    ($num_threads:expr; $prod_config:expr; $prod_type:ty; $func:expr, $($($args:expr),*);*) => {
         {
             use rdkafka::ClientConfig;
             use rdkafka::producer::BaseProducer;
@@ -32,7 +34,7 @@ macro_rules! produce_parallel {
                     let tx = tx.clone();
                     let prod_config = prod_config.clone();
                     handles.push(std::thread::spawn(move || {
-                        match prod_config.create::<BaseProducer>() {
+                        match prod_config.create::<$prod_type>() {
                             Ok(producer) => {
                                 let result = $func(producer, $($args),*);
                                 let send_res = tx.send(result);
