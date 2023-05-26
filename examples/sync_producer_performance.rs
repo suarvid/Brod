@@ -10,7 +10,7 @@ use brod::{
 
 use pretty_env_logger;
 
-const N_MESSAGES: usize = 100_000;
+const N_MESSAGES: usize = 1_000_000;
 
 /// A basic performance comparison between a using a single producer with one thread,
 /// a single producer shared between multiple threads, and multiple threads each alloted
